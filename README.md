@@ -94,6 +94,12 @@ TCP端口转发配置，轻松实现内网穿透和端口映射。实时查看�
 - 灵活的部署方案
 - 数据备份和恢复
 
+### 🔒 SSL/TLS 支持
+- 支持 HTTPS，自动生成自签名证书（有效期10年）
+- 端口自动调整（80 → 443）
+- 支持 BasicAuth 认证
+- 证书文件自动管理
+
 ## 技术架构
 
 ### 后端技术栈
@@ -145,6 +151,24 @@ chmod +x /opt/web-ssh-client
   -db-name machine_manage
 ```
 
+#### 启用 SSL/TLS（HTTPS）
+```bash
+# Windows
+web-ssh-client.exe --enable-ssl --server-host example.com --port 80 -db-type sqlite
+
+# Linux
+/opt/web-ssh-client --enable-ssl --server-host example.com --port 80 -db-type sqlite
+```
+
+**SSL 功能说明：**
+- 启用 `--enable-ssl` 后，服务器会自动生成自签名证书
+- 如果端口是 80，会自动改为 443
+- 证书文件保存在可执行文件目录下：`server.crt` 和 `server.key`
+- 证书有效期为 10 年
+- 证书基于 `--server-host` 参数生成，支持域名和 IP 地址
+- 如果证书文件已存在，会直接使用现有证书，不会重复生成
+- 证书自动包含 `localhost`、`127.0.0.1` 和 `::1`，方便本地访问
+
 ### 首次登录
 1. 启动服务后，访问 `http://localhost:8080`
 2. 使用默认管理员账号登录：
@@ -187,8 +211,10 @@ chmod +x /opt/web-ssh-client
 ### 🔒 安全性
 - 密码加密存储
 - JWT 身份认证
+- SSL/TLS 支持（HTTPS）
 - 权限细粒度控制
 - 操作日志记录
+- BasicAuth 认证支持
 
 ### 📦 灵活性
 - 支持 SQLite 和 MySQL
@@ -207,9 +233,10 @@ chmod +x /opt/web-ssh-client
 | `-db-user` | 数据库用户名（MySQL） | root |
 | `-db-password` | 数据库密码（MySQL） | (空) |
 | `-db-name` | 数据库名称或文件路径 | machine_manage.db |
-| `-server-host` | 服务器 IP/域名 | 127.0.0.1 |
+| `-server-host` | 服务器 IP/域名（用于端口转发显示和SSL证书） | 127.0.0.1 |
 | `-max-connections` | WebSocket 最大连接数（0=不限制） | 0 |
 | `-auth-key` | 授权密钥 | (空) |
+| `-enable-ssl` | 启用 SSL/TLS（启用后会自动生成自签名证书） | false |
 
 ## 系统服务部署
 
